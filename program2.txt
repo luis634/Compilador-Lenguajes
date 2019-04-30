@@ -1,0 +1,32 @@
+program sumaMatrices
+    int r1,r2,c1,c2
+    int r = 0
+    int c = 0
+    int m1(r+50,c+50)
+    int m2(r+50,c+50)
+    int mR(r+50,c+50)
+    #esto es un comentario
+    leeTamano()
+    sumaMat()
+end program sumaMatrices
+
+subroutine leeTamano
+    do
+    read r1
+    read c1
+    read r2
+    read c2
+    if (r1 == r2 and not (c1 <> c2) and c1 < 50 and r1 <  50) exit
+    write " dimensiones incorrectas "
+    end do
+end subroutine
+
+subroutine sumaMat
+    do r = 0, r1, 1
+        do c = 0, c1, 1
+            #mR(r,c) = m1(r,c) + m2(r,c)
+            write mR(r,c)
+        end do
+        write " /n "
+    end do
+end subroutine

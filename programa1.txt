@@ -1,0 +1,65 @@
+program menu
+int x, y, i, d
+real temp, temp2, resultado, fact, yTemp
+do
+  if (d <> 0) exit
+
+  write "Factorial (1), Pow(2), Exponecial(3)"
+  read d
+  #Factorial
+  if (d == 1) then
+
+    write "Factorial"
+    read x
+    y = x - 1
+    resultado = x
+    do
+      if (y < 1) exit
+      resultado = resultado * y
+      y = y - 1
+    end do
+    write resultado
+  #Power
+  elsif (d == 2) then
+
+    write "Pow"
+    read x
+    read y
+    resultado = 1
+    do i = 1, y
+      resultado = resultado * x
+    end do
+    write resultado
+  #Exponencial
+  elsif (d == 3) then
+
+    write "Exponecial"
+    read x
+    resultado = 1
+    do y = 1, 10
+      temp = 1
+      do i = 1, y
+        temp = temp * x
+      end do
+      yTemp = y - 1
+      fact = y
+      do
+        if (yTemp < 1) exit
+        fact = fact * yTemp
+        yTemp = yTemp-1
+      end do
+      #write "valores"
+      #write temp
+      #write fact
+      temp2 = temp/fact
+      #write temp2
+      resultado = resultado + temp2
+    end do
+    write resultado
+  end if
+
+  write "Repetir? si(0)/no(any)"
+  read d
+
+end do
+end program menu
