@@ -1,5 +1,5 @@
 tokens = [
-    'COMMA','END','PROGRAM','NUMBER','REAL',
+    'COMMA','END','PROGRAM','NUMBER',
     'INT','REAL','OPAREN','CPAREN','EQUAL','EQUALS',
     'SUBROUTINE','READ','WRITE','IF','THEN',
     'ELSE','ELSIF','COLLON','DO','EXIT',
@@ -80,7 +80,7 @@ PJumps = []     #Jumps stack
 PReturns = []   #Returns stack
 PTypes = []     #Types stack
 POper = []      #Operators stack
-POperand = []      #Operands stack
+POperand = []   #Operands stack
 PExit = []      #Exit stack
 PTemp = []      #Temporals Stack
 for x in range(0,30):
@@ -90,6 +90,26 @@ quadCount = 0   #Cuenta el numero de cuadruplo en el que nos encontramos
 #Diccionario con los tipos de variables
 variables = {}
 type = ""
+
+class Node:
+    def __init__(self, data=None, address = None, nextval = None):
+        self.dataval = data
+        self.address = address
+        self.nextval = nextval
+        return
+    def __str__(self):
+        return str(self.dataval) + ' '+str(self.address)+' ' + str(self.nextval)
+
+    def getData(self):
+        return self.dataval
+    def clone(self):
+        return(Node(self.dataval,self.address,self.nextval))
+matrices = {}  #Lista con las variables dimensionadas
+i = Node()
+base = 0
+
+# for x in range(0,30):
+#     matrices.append(dValues)
 
 def p_empty(p):
      'empty :'
@@ -107,25 +127,54 @@ def p_variables(p):
 def p_variables1(p):
     'variables1 : tipo ID loopvars '
     variables[p[2]]=p[1]
-
 def p_loopvars(p):
     '''loopvars : loopvars COMMA ID
                 | empty'''
     if (p[1] != "empty"):
         variables[p[3]]=type
 def p_variables2(p):
-    'variables2 : tipo ID EQUAL expression'
+    '''variables2 : tipo ID EQUAL NUMBER
+                    | tipo ID EQUAL REAL '''
     variables[p[2]]=p[1]
+    if p[1] == 'int':
+        quad = ['=',int(float(p[4])),"",p[2]]
+    else:
+        quad = ['=',float(p[4] ),"",p[2]]
+    quadList.append(quad)
+    global quadCount
+    quadCount = quadCount + 1
 def p_variables3(p):
-    'variables3 : tipo ID OPAREN expression COMMA expression CPAREN'
-    variables[p[2]]=p[1]
+    'variables3 : tipo ID paso1dim OPAREN paso2dim NUMBER paso3dim COMMA NUMBER paso4dim CPAREN paso52dim'
 def p_variables4(p):
-    'variables4 : tipo ID OPAREN expression '
-    variables[p[2]]=p[1]
-def p_ids(p):
-    '''ids : ids COMMA ID
-            | ID'''
-
+    'variables4 : tipo ID paso1dim OPAREN paso2dim NUMBER paso3dim CPAREN paso51dim'
+def p_paso1dim(p):
+    'paso1dim : '
+    variables['[]' + p[-1]]=p[-2]
+    p[0] = '[]' + p[-1]
+def p_paso2dim(p):
+    'paso2dim : '
+    i = Node(1)
+def p_paso3dim(p):
+    'paso3dim : '
+    d = int(p[-1])
+    i.dataval = d
+    matrices.setdefault(p[-4],i.clone())
+def p_paso4dim(p):
+    'paso4dim : '
+    d = int(p[-1])
+    j = Node(d)
+    i.nextval = j
+    matrices.setdefault(p[-7],i.clone())
+def p_paso51dim(p):
+    'paso51dim :'
+    global base
+    matrices[p[-6]].address = base
+    base = base + matrices[p[-6]].dataval
+def p_paso52dim(p):
+    'paso52dim :'
+    global base
+    matrices[p[-9]].address = matrices[p[-9]].nextval.dataval
+    base = base + matrices[p[-9]].dataval
 def p_statements(p):
     '''statements : statements statement
                 | statement
@@ -397,8 +446,8 @@ def p_paso5(p):
             PTypes.append(typeResult)
 def p_ssubexpression(p):
     '''ssubexpression : ID paso1
-                        | ID OPAREN expression CPAREN
-                        | ID OPAREN expression COMMA expression CPAREN
+                        | ID paso14 OPAREN expression CPAREN
+                        | ID paso14 OPAREN expression COMMA expression CPAREN
                         | NUMBER paso12
                         | REAL paso13
                         | OPAREN paso6 expression CPAREN paso7'''
@@ -418,6 +467,11 @@ def p_paso13(p):
     op = '&'+p[-1]
     POperand.append(op)
     PTypes.append('real')
+def p_paso14(p):
+    'paso14 :'
+    POperand.append('[]'+p[-1])
+    #PTypes.append('real')
+    PTypes.append(variables['[]'+p[-1]])
 def p_paso6(p):
     'paso6 :'
     POper.append("(")
@@ -568,9 +622,9 @@ tValues = {'value':None,'type':None}
 for x in range(0,30):
     temporals.append(tValues)
 for value in variables:
-    if variables[value] == 'int':
+    if variables[value] == 'int' and value[0] != '[':
         values.setdefault(value, 0)
-    elif variables[value] == 'real':
+    elif variables[value] == 'real' and value[0] != '[':
         values.setdefault(value, 0.0)
 # print values
 # print variables
@@ -653,7 +707,7 @@ while cont < len(quadList):
             values[quad[3]] = result
             variables[quad[3]] = resultType(type1,type2,None)
     elif quad[0] == '=': #Asignacion
-        # print "asignacion"
+            # print "asignacion"
         if quad[1][0] == '%':
             values[quad[3]] = int(float(quad[1][1:]))
             #variables[quad[3]] = 'int'
@@ -696,4 +750,7 @@ while cont < len(quadList):
 #print temporals
 print values
 print variables
+print matrices['[]a']
+print matrices['[]b']
 # printQuad(quadList)
+print i

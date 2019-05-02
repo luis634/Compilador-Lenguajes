@@ -1,6 +1,8 @@
 program menu
 int x, y, i, d
 real temp, temp2, resultado, fact, yTemp
+int a(3)
+int b(3,4)
 do
   if (d <> 0) exit
 
