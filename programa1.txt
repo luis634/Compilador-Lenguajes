@@ -1,10 +1,11 @@
 program menu
 int x, y, i, d
 real temp, temp2, resultado, fact, yTemp
-int a(3)
-int b(3,4)
+int a(5)
+int b(2,7)
+real c(21)
 do
-  if (d <> 0) exit
+  if (d <> 0) then exit end if
 
   write "Factorial (1), Pow(2), Exponecial(3)"
   read d
@@ -16,7 +17,7 @@ do
     y = x - 1
     resultado = x
     do
-      if (y < 1) exit
+      if (y < 1) then exit end if
       resultado = resultado * y
       y = y - 1
     end do
@@ -46,7 +47,7 @@ do
       yTemp = y - 1
       fact = y
       do
-        if (yTemp < 1) exit
+        if (yTemp < 1) then exit end if
         fact = fact * yTemp
         yTemp = yTemp-1
       end do

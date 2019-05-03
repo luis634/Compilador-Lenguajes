@@ -1,10 +1,10 @@
 program sumaMatrices
     int r1,r2,c1,c2
-    int r = 0
-    int c = 0
-    int m1(r+50,c+50)
-    int m2(r+50,c+50)
-    int mR(r+50,c+50)
+    int r
+    int c
+    int m1(50,50)
+    int m2(50,50)
+    int mR(50,50)
     #esto es un comentario
     leeTamano()
     sumaMat()
@@ -16,7 +16,7 @@ subroutine leeTamano
     read c1
     read r2
     read c2
-    if (r1 == r2 and not (c1 <> c2) and c1 < 50 and r1 <  50) exit
+    if (r1 == r2 and not (c1 <> c2) and c1 < 50 and r1 <  50) then exit end if
     write " dimensiones incorrectas "
     end do
 end subroutine

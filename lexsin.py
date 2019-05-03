@@ -1,5 +1,5 @@
 tokens = [
-    'COMMA','END','PROGRAM','NUMBER',
+    'COMMA','END','PROGRAM','NUMBER','CALL',
     'INT','REAL','OPAREN','CPAREN','EQUAL','EQUALS',
     'SUBROUTINE','READ','WRITE','IF','THEN',
     'ELSE','ELSIF','COLLON','DO','EXIT',
@@ -24,6 +24,7 @@ reserved = {
     'elsif': 'ELSIF',
     'subroutine': 'SUBROUTINE',
     'int': 'INT',
+    'call': 'CALL',
  }
 # Tokens
 
@@ -92,25 +93,29 @@ variables = {}
 type = ""
 
 class Node:
-    def __init__(self, data=None, address = None, nextval = None):
-        self.dataval = data
-        self.address = address
-        self.nextval = nextval
+    def __init__(self, d1=None, d2 = None, base = None):
+        self.d1 = d1
+        self.d2 = d2
+        self.base = base
         return
     def __str__(self):
-        return str(self.dataval) + ' '+str(self.address)+' ' + str(self.nextval)
-
-    def getData(self):
-        return self.dataval
+        return str(self.d1) + ' '+str(self.d2)+' ' + str(self.base)
+    def clear(self):
+        self.d1 = None
+        self.d2 = None
+        self.base = None
+        return
     def clone(self):
-        return(Node(self.dataval,self.address,self.nextval))
+        return(Node(self.d1,self.d2,self.base))
 matrices = {}  #Lista con las variables dimensionadas
 i = Node()
 base = 0
 
 # for x in range(0,30):
 #     matrices.append(dValues)
-
+def p_p(p):
+    'p :'
+    print "p"
 def p_empty(p):
      'empty :'
      pass
@@ -149,32 +154,41 @@ def p_variables4(p):
     'variables4 : tipo ID paso1dim OPAREN paso2dim NUMBER paso3dim CPAREN paso51dim'
 def p_paso1dim(p):
     'paso1dim : '
-    variables['[]' + p[-1]]=p[-2]
-    p[0] = '[]' + p[-1]
+    # variables['[]' + p[-1]]=p[-2]
+    # p[0] = '[]' + p[-1]
+    variables[p[-1]]=p[-2]
+    p[0] = p[-1]
 def p_paso2dim(p):
     'paso2dim : '
     i = Node(1)
 def p_paso3dim(p):
     'paso3dim : '
     d = int(p[-1])
-    i.dataval = d
-    matrices.setdefault(p[-4],i.clone())
+    i.d1 = d
+    # matrices.setdefault(p[-4],i.clone())
 def p_paso4dim(p):
     'paso4dim : '
     d = int(p[-1])
-    j = Node(d)
-    i.nextval = j
-    matrices.setdefault(p[-7],i.clone())
+    i.d2 = d
+    # matrices.setdefault(p[-7],i.clone())
 def p_paso51dim(p):
     'paso51dim :'
     global base
-    matrices[p[-6]].address = base
-    base = base + matrices[p[-6]].dataval
+    i.base = base
+    matrices[p[-6]] = i.clone()
+    base = base + i.d1
+    i.clear()
+    # matrices[p[-6]].d2 = base
+    # base = base + matrices[p[-6]].d1
 def p_paso52dim(p):
     'paso52dim :'
     global base
-    matrices[p[-9]].address = matrices[p[-9]].nextval.dataval
-    base = base + matrices[p[-9]].dataval
+    i.base = base
+    matrices[p[-9]] = i.clone()
+    base = base + i.d1 * i.d2
+    i.clear()
+    # matrices[p[-9]].d2 = matrices[p[-9]].base.d1
+    # base = base + matrices[p[-9]].d1
 def p_statements(p):
     '''statements : statements statement
                 | statement
@@ -193,16 +207,19 @@ def p_subroutines(p):
                 | '''
 
 def p_statement(p):
-    '''statement : declare
-                | ID OPAREN CPAREN
-                | ID COLLON DO dowhile END DO ID
+    '''statement : ID paso8 EQUAL expression paso9
+                | ID paso8 OPAREN expression pasogetdim1 COMMA expression pasogetdim2 CPAREN EQUAL expression paso9
+                | ID paso8 OPAREN expression pasogetdim CPAREN EQUAL expression paso9
+                | CALL ID
+                | ID COLLON DO paso1do statements paso2do END DO ID
                 | READ ID readquad
                 | WRITE write writequad
                 | IF paso1bool ifs ELSE paso3bool statements END IF paso4bool
                 | IF paso1bool ifs END IF paso4bool
+                | EXIT paso4do
                 | DO ID paso1for EQUAL expression paso2for COMMA expression paso3for COMMA expression statements paso4for1 END DO
                 | DO ID paso1for EQUAL expression paso2for COMMA expression paso3for statements paso4for2 END DO
-                | DO paso1do dowhilenoid paso2do END DO'''
+                | DO paso1do statements paso2do END DO'''
 def p_write(p):
         '''write : expression correction
                 | STRING'''
@@ -269,7 +286,6 @@ def p_paso3for(p):
 def p_paso4for1(p):
     'paso4for1 : '
     print POperand
-
     E = POperand.pop()
     id = POperand.pop()
     quad = ['+',id,E,id]
@@ -309,11 +325,12 @@ def p_readquad(p):
     quadList.append(quad)
     global quadCount
     quadCount = quadCount + 1
-def p_declare(p):
-    '''declare : ID paso8 EQUAL expression paso9
-                | ID paso8 OPAREN expression COMMA expression CPAREN EQUAL expression paso9
-                | ID paso8 OPAREN expression CPAREN EQUAL expression paso9'''
-
+# def p_declare(p):
+    # '''declare : ID paso8 EQUAL expression paso9
+    #             | ID paso8 p dimention EQUAL expression paso9'''
+# def p_dimention(p):
+    # '''dimention : OPAREN expression COMMA expression pasogetdim CPAREN
+    #             | OPAREN expression pasogetdim CPAREN'''
 def p_paso8(p):
     'paso8 : '
     POperand.append((p[-1]))
@@ -326,14 +343,65 @@ def p_paso9(p):
     quadList.append(quad)
     global quadCount
     quadCount = quadCount + 1
-
+def p_pasogetdim(p):
+    'pasogetdim : '
+    Si = POperand.pop()
+    R = POperand.pop()
+    PTypes.pop()
+    PTypes.pop()
+    result = PTemp.pop()
+    global quadCount
+    # if matrices[R].d2 == None:
+    quad = ['+',Si,'%'+str(matrices[R].base),result]
+    quadList.append(quad)
+    quadCount = quadCount + 1
+    # else:
+    #     quad = ['*',Si,'%'+str(matrices[R].d2),result]
+    #     quadList.append(quad)
+    #     POperand.append(result)
+    #     Si = POperand.pop()
+    #     result = PTemp.pop()
+    #     quad = ['+',Si,'%'+str(matrices[R].base),result]
+    #     quadList.append(quad)
+    #     quadCount = quadCount + 2
+    POperand.append('('+result+')')
+    PTypes.append(variables[R])
+def p_pasogetdim1(p):
+    'pasogetdim1 : '
+    Si = POperand.pop()
+    R = POperand[-1]
+    PTypes.pop()
+    result = PTemp.pop()
+    global quadCount
+    quad = ['*',Si,'%'+str(matrices[R].d2),result]
+    quadList.append(quad)
+    quadCount = quadCount + 1
+    POperand.append(result)
+    PTypes.append(variables[R])
+def p_pasogetdim2(p):
+    'pasogetdim2 : '
+    R1 = POperand.pop()
+    R2 = POperand.pop()
+    PTypes.pop()
+    PTypes.pop()
+    result = PTemp.pop()
+    global quadCount
+    quad = ['+',R1,R2,result]
+    quadList.append(quad)
+    quadCount = quadCount + 1
+    POperand.append(result)
+    R = POperand.pop()
+    bas = POperand.pop()
+    result = PTemp.pop()
+    quad = ['+',R,'%'+str(matrices[bas].base),result]
+    quadList.append(quad)
+    quadCount = quadCount + 1
+    POperand.append('('+result+')')
+    PTypes.append(variables[bas])
 def p_ifs(p):
     'ifs : OPAREN logicexp CPAREN paso2bool THEN statements iffs '
 def p_paso2bool(p):
     'paso2bool :'
-    # print POperand
-    # print quadCount
-    # printQuad(quadList)
     e = POperand.pop()
     tipo = PTypes.pop()
     if tipo != 'bool':
@@ -355,24 +423,23 @@ def p_iffs(p):
     '''iffs : iffs ELSIF paso3bool OPAREN logicexp CPAREN paso2bool THEN statements
             | ELSIF paso3bool OPAREN logicexp CPAREN paso2bool THEN statements
             | '''
-
-def p_dowhile(p):
-    '''dowhile : dowhile statements IF OPAREN logicexp CPAREN EXIT paso4do statements ID
-                | statements IF OPAREN logicexp CPAREN EXIT paso4do statements ID'''
-def p_dowhilenoid(p):
-    '''dowhilenoid : dowhilenoid IF OPAREN logicexp CPAREN EXIT paso4do statements
-    | IF OPAREN logicexp CPAREN EXIT paso4do statements'''
+# def p_dowhile(p):
+#     '''dowhile : dowhile statements IF OPAREN logicexp CPAREN EXIT paso4do statements ID
+#                 | statements IF OPAREN logicexp CPAREN EXIT paso4do statements ID'''
+# def p_dowhilenoid(p):
+#     '''dowhilenoid : dowhilenoid IF OPAREN logicexp CPAREN EXIT paso4do statements
+#     | IF OPAREN logicexp CPAREN EXIT paso4do statements'''
 def p_paso4do(p):
     'paso4do : '
-    e = POperand.pop()
-    tipo = PTypes.pop()
-    if tipo != 'bool':
-        raise Exception("ERROR: Type Mismatch! not bool")
-    else:
-        quad = ['gotoF', e, '', quadCount + 2]
-        quadList.append(quad)
-        global quadCount
-        quadCount = quadCount + 1
+    # e = POperand.pop()
+    # tipo = PTypes.pop()
+    # if tipo != 'bool':
+    #     raise Exception("ERROR: Type Mismatch! not bool")
+    # else:
+    #     quad = ['gotoF', e, '', quadCount + 2]
+    #     quadList.append(quad)
+    #     global quadCount
+    #     quadCount = quadCount + 1
     PExit.append(quadCount)
     quad = ['goto','','','']
     quadList.append(quad)
@@ -446,8 +513,8 @@ def p_paso5(p):
             PTypes.append(typeResult)
 def p_ssubexpression(p):
     '''ssubexpression : ID paso1
-                        | ID paso14 OPAREN expression CPAREN
-                        | ID paso14 OPAREN expression COMMA expression CPAREN
+                        | ID paso14 OPAREN expression pasogetdim CPAREN
+                        | ID paso14 OPAREN expression pasogetdim1 COMMA expression pasogetdim2 CPAREN
                         | NUMBER paso12
                         | REAL paso13
                         | OPAREN paso6 expression CPAREN paso7'''
@@ -469,9 +536,9 @@ def p_paso13(p):
     PTypes.append('real')
 def p_paso14(p):
     'paso14 :'
-    POperand.append('[]'+p[-1])
+    POperand.append(p[-1])
     #PTypes.append('real')
-    PTypes.append(variables['[]'+p[-1]])
+    PTypes.append(variables[p[-1]])
 def p_paso6(p):
     'paso6 :'
     POper.append("(")
@@ -586,7 +653,7 @@ yacc.yacc()
 error_flag = 0
 # while True:
 # s = raw_input('calc > ')   # use input() on Python 3
-f = open("programa1.txt", "r")
+f = open("programa2.txt", "r")
 s = ''
 for line in f:
     try:
@@ -616,6 +683,9 @@ def is_number(s):
     except ValueError:
         return False
 
+dimentionVector = [] #Array with all memory space
+for k in range(0,base):
+    dimentionVector.append(0)
 values = {}
 temporals = []
 tValues = {'value':None,'type':None}
@@ -706,7 +776,7 @@ while cont < len(quadList):
         else:
             values[quad[3]] = result
             variables[quad[3]] = resultType(type1,type2,None)
-    elif quad[0] == '=': #Asignacion
+    elif quad[0] == '=' and quad[3][0] != '(': #Asignacion
             # print "asignacion"
         if quad[1][0] == '%':
             values[quad[3]] = int(float(quad[1][1:]))
@@ -721,6 +791,23 @@ while cont < len(quadList):
             values[quad[3]] = values[quad[1]]
         else:
             print ("type error cannot declare int as real, skipping step")
+            print cont
+    elif quad[0] == '=':
+        if quad[1][0] == '(':
+            address = quad[1][1:-1]
+            if address[0] == '~':
+                address = address[1:]
+            address = temporals[int(float(address))][value]
+            print address
+            assign = dimentionVector[address]
+        else:
+            if quad[1][0] == '%':
+                assign = int(float(quad[1][1:]))
+            elif quad[1][0] == '&':
+                assign = float(quad[1][1:])
+        address = quad[3][2:-1]
+        address = temporals[int(float(address))][value]
+        dimentionVector[int(address)] = assign
     elif quad[0] == 'not':
         # print 'not'
         if quad[1][0] == '~':
@@ -750,7 +837,9 @@ while cont < len(quadList):
 #print temporals
 print values
 print variables
-print matrices['[]a']
-print matrices['[]b']
+# print matrices['[]a']
+# print matrices['[]b']
+# print matrices['[]c']
 # printQuad(quadList)
 print i
+print dimentionVector
