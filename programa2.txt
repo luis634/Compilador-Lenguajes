@@ -1,10 +1,12 @@
 program menu
 int a(3)
 int c(3,4)
+real d(2)
 int b
-b = 0
-a(1) = 1
-a(0) = a(1)
-c(2,0) = 2
-# a(2) = a(1)
+b = 2
+c(b,0) = 2
+a(0) = c(2,0)
+d(1) = 5.5
+d(0) = 45
+c(0,3) = 700
 end program menu

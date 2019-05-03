@@ -1,9 +1,6 @@
 program menu
 int x, y, i, d
 real temp, temp2, resultado, fact, yTemp
-int a(5)
-int b(2,7)
-real c(21)
 do
   if (d <> 0) then exit end if
 
@@ -39,7 +36,7 @@ do
     write "Exponecial"
     read x
     resultado = 1
-    do y = 1, 10
+    do y = 1, 100
       temp = 1
       do i = 1, y
         temp = temp * x

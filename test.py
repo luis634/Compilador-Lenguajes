@@ -653,7 +653,7 @@ yacc.yacc()
 error_flag = 0
 # while True:
 # s = raw_input('calc > ')   # use input() on Python 3
-f = open("programa2.txt", "r")
+f = open("programa1.txt", "r")
 s = ''
 for line in f:
     try:
