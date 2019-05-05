@@ -91,7 +91,13 @@ quadCount = 0   #Cuenta el numero de cuadruplo en el que nos encontramos
 #Diccionario con los tipos de variables
 variables = {}
 type = ""
+procedures = [] #Lista con las llamadas a funciones
 
+class Procedure:
+    def __init__(self, id=None, addr = None):
+        self.id = id
+        self.addr = addr
+        return
 class Node:
     def __init__(self, d1=None, d2 = None, base = None):
         self.d1 = d1
@@ -121,8 +127,13 @@ def p_empty(p):
      pass
      p[0] = "empty"
 def p_programa(p):
-    'programa : PROGRAM ID variables statements END PROGRAM ID subroutines'
-
+    'programa : PROGRAM ID variables statements END PROGRAM ID ending subroutines '
+def p_ending(p):
+    'ending : '
+    global quadCount
+    quad = ['end','','','']
+    quadList.append(quad)
+    quadCount = quadCount + 1
 def p_variables(p):
     '''variables : variables variables1
                 | variables variables2
@@ -202,15 +213,31 @@ def p_tipo(p):
     p[0]=p[1]
 
 def p_subroutines(p):
-    '''subroutines : subroutines SUBROUTINE ID statements END SUBROUTINE
-                | SUBROUTINE ID statements END SUBROUTINE
+    '''subroutines : subroutines SUBROUTINE ID paso1subroutine statements END SUBROUTINE paso2subroutine
+                | SUBROUTINE ID paso1subroutine statements END SUBROUTINE paso2subroutine
                 | '''
-
+def p_paso1subroutine(p):
+    'paso1subroutine : '
+    global quadCount
+    # PJumps.append(quadCount)
+    # quad = ['goto','','','']
+    # quadList.append(quad)
+    # quadCount = quadCount + 1
+    for procedure in procedures:
+        if procedure.id == p[-1]:
+            dir = procedure.addr
+            quadList[dir][3] = quadCount
+def p_paso2subroutine(p):
+    'paso2subroutine : '
+    global quadCount
+    quad = ['return','','','']
+    quadList.append(quad)
+    quadCount = quadCount + 1
 def p_statement(p):
     '''statement : ID paso8 EQUAL expression paso9
                 | ID paso8 OPAREN expression pasogetdim1 COMMA expression pasogetdim2 CPAREN EQUAL expression paso9
                 | ID paso8 OPAREN expression pasogetdim CPAREN EQUAL expression paso9
-                | CALL ID
+                | CALL ID callprocedure
                 | ID COLLON DO paso1do statements paso2do END DO ID
                 | READ ID readquad
                 | WRITE write writequad
@@ -355,15 +382,6 @@ def p_pasogetdim(p):
     quad = ['+',Si,'%'+str(matrices[R].base),result]
     quadList.append(quad)
     quadCount = quadCount + 1
-    # else:
-    #     quad = ['*',Si,'%'+str(matrices[R].d2),result]
-    #     quadList.append(quad)
-    #     POperand.append(result)
-    #     Si = POperand.pop()
-    #     result = PTemp.pop()
-    #     quad = ['+',Si,'%'+str(matrices[R].base),result]
-    #     quadList.append(quad)
-    #     quadCount = quadCount + 2
     POperand.append('('+result+')')
     PTypes.append(variables[R])
 def p_pasogetdim1(p):
@@ -398,6 +416,13 @@ def p_pasogetdim2(p):
     quadCount = quadCount + 1
     POperand.append('('+result+')')
     PTypes.append(variables[bas])
+def p_callprocedure(p):
+    'callprocedure :'
+    global quadCount
+    quad = ['gotoP','','','']
+    quadList.append(quad)
+    procedures.append(Procedure(p[-1],quadCount))
+    quadCount = quadCount + 1
 def p_ifs(p):
     'ifs : OPAREN logicexp CPAREN paso2bool THEN statements iffs '
 def p_paso2bool(p):
@@ -700,17 +725,19 @@ class TempVal:
 dimentionVector = [] #Array with all memory space
 for k in range(0,base):
     dimentionVector.append(0)
-values = {}
-temporals = []
-# tValues = {'value':None,'type':None}
+
+temporals = [] #Lista con temporales y sus valores
 i = TempVal()
 for x in range(0,30):
     temporals.append(i.clone())
+
+values = {} #Valores de variables simples
 for value in variables:
     if variables[value] == 'int' and value[0] != '[':
         values.setdefault(value, 0)
     elif variables[value] == 'real' and value[0] != '[':
         values.setdefault(value, 0.0)
+Ppc = [] #Pila de ejecucion
 # print values
 # print variables
 printQuad(quadList)
@@ -801,13 +828,9 @@ while cont < len(quadList):
             if address[0] == '~':
                 address = address[1:]
             address = temporals[int(float(address))].value
-            print address
             assign = dimentionVector[int(address)]
-            print assign
             address2 = quad[3][2:-1]
-            print address2
             address2 = temporals[int(float(address2))].value
-            print dimentionVector[int(address2)]
             dimentionVector[int(address2)] = assign
         else:
             if quad[1][0] == '%':
@@ -833,6 +856,11 @@ while cont < len(quadList):
         if quad[1][0] == '~':
             if not temporals[int(float(quad[1][1:]))].value:
                 cont = int(float(quad[3])) - 1
+    elif quad[0] == 'gotoP':
+         Ppc.append(cont)
+         cont = quad[3] - 1
+    elif quad[0] == 'return':
+        cont = Ppc.pop()
     elif quad[0] == 'read':
         input = raw_input()
         if is_number(input):
@@ -845,13 +873,12 @@ while cont < len(quadList):
             print quad[3][1:-1]
         else:
             print values[quad[3]]
+    elif quad[0] == 'end':
+        cont = len(quadList)
     cont = cont + 1
 #print temporals
 print values
 print variables
-# print matrices['[]a']
-# print matrices['[]b']
-# print matrices['[]c']
 # printQuad(quadList)
 print dimentionVector
 # for temp in temporals:
