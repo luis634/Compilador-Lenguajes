@@ -74,7 +74,7 @@ start = 'programa'
 
 precedence = (
 ('left','PLUS','MINUS'),
-('left','MUL','DIV'),
+('left','COMMA','MUL','DIV'),
 )
 
 PJumps = []     #Jumps stack
@@ -84,7 +84,7 @@ POper = []      #Operators stack
 POperand = []   #Operands stack
 PExit = []      #Exit stack
 PTemp = []      #Temporals Stack
-for x in range(0,30):
+for x in range(0,100):
     PTemp.append('~'+str(x))
 quadList = []   #Lista de los cuadruplos
 quadCount = 0   #Cuenta el numero de cuadruplo en el que nos encontramos
@@ -219,17 +219,23 @@ def p_subroutines(p):
 def p_paso1subroutine(p):
     'paso1subroutine : '
     global quadCount
-    # PJumps.append(quadCount)
+    PJumps.append(quadCount)
     # quad = ['goto','','','']
     # quadList.append(quad)
     # quadCount = quadCount + 1
-    for procedure in procedures:
-        if procedure.id == p[-1]:
-            dir = procedure.addr
-            quadList[dir][3] = quadCount
+
+    # for procedure in procedures:
+    #     if procedure.id == p[-1]:
+    #         dir = procedure.addr
+    #         quadList[dir][3] = quadCount
 def p_paso2subroutine(p):
     'paso2subroutine : '
     global quadCount
+    cnt = PJumps.pop()
+    for procedure in procedures:
+        if procedure.id == p[-5]:
+            dir = procedure.addr
+            quadList[dir][3] = cnt
     quad = ['return','','','']
     quadList.append(quad)
     quadCount = quadCount + 1
@@ -312,7 +318,6 @@ def p_paso3for(p):
     quadCount = quadCount + 1
 def p_paso4for1(p):
     'paso4for1 : '
-    print POperand
     E = POperand.pop()
     id = POperand.pop()
     quad = ['+',id,E,id]
@@ -372,6 +377,8 @@ def p_paso9(p):
     quadCount = quadCount + 1
 def p_pasogetdim(p):
     'pasogetdim : '
+    printQuad(quadList)
+    print POperand
     Si = POperand.pop()
     R = POperand.pop()
     PTypes.pop()
@@ -386,6 +393,9 @@ def p_pasogetdim(p):
     PTypes.append(variables[R])
 def p_pasogetdim1(p):
     'pasogetdim1 : '
+    # print p[-1]
+    # print POperand
+    # print quadList[-1]
     Si = POperand.pop()
     R = POperand[-1]
     PTypes.pop()
@@ -396,8 +406,11 @@ def p_pasogetdim1(p):
     quadCount = quadCount + 1
     POperand.append(result)
     PTypes.append(variables[R])
+    # print quadList[-1]
 def p_pasogetdim2(p):
     'pasogetdim2 : '
+    # print POperand
+    # print quadList[-1]
     R1 = POperand.pop()
     R2 = POperand.pop()
     PTypes.pop()
@@ -409,6 +422,7 @@ def p_pasogetdim2(p):
     quadCount = quadCount + 1
     POperand.append(result)
     R = POperand.pop()
+    # print quadList[-1]
     bas = POperand.pop()
     result = PTemp.pop()
     quad = ['+',R,'%'+str(matrices[bas].base),result]
@@ -416,6 +430,8 @@ def p_pasogetdim2(p):
     quadCount = quadCount + 1
     POperand.append('('+result+')')
     PTypes.append(variables[bas])
+    # print POperand
+    # printQuad(quadList)
 def p_callprocedure(p):
     'callprocedure :'
     global quadCount
@@ -492,7 +508,9 @@ def p_expression(p):
     p[0]=p[1]
 def p_paso4(p):
     'paso4 : '
-    if (POper):
+    # print "a"
+    # if (POper and not (POperand[-1] in matrices.keys() or POperand[-2] in matrices.keys() or POperand[-3] in matrices.keys())):
+    if (POper and not (POperand[-1] in matrices.keys() or POperand[-2] in matrices.keys())):
         temp = POper.pop()
         POper.append(temp)
         if temp == '+' or temp == '-':
@@ -519,7 +537,7 @@ def p_subexpression(p):
     p[0]=p[1]
 def p_paso5(p):
     'paso5 :'
-    if (POper):
+    if (POper and not (POperand[-1] in matrices.keys() or POperand[-2] in matrices.keys() or POperand[-3] in matrices.keys())):
         temp = POper.pop()
         POper.append(temp)
         if temp == '*' or temp == '/':
@@ -547,6 +565,7 @@ def p_ssubexpression(p):
 def p_paso1(p):
     'paso1 :'
     POperand.append(p[-1])
+    print POperand
     #PTypes.append('real')
     PTypes.append(variables[p[-1]])
 def p_paso12(p):
@@ -561,7 +580,9 @@ def p_paso13(p):
     PTypes.append('real')
 def p_paso14(p):
     'paso14 :'
+    print p[-1]
     POperand.append(p[-1])
+    print POperand
     #PTypes.append('real')
     PTypes.append(variables[p[-1]])
 def p_paso6(p):
@@ -678,7 +699,7 @@ yacc.yacc()
 error_flag = 0
 # while True:
 # s = raw_input('calc > ')   # use input() on Python 3
-f = open("programa2.txt", "r")
+f = open("sumatoria.txt", "r")
 s = ''
 for line in f:
     try:
@@ -728,7 +749,7 @@ for k in range(0,base):
 
 temporals = [] #Lista con temporales y sus valores
 i = TempVal()
-for x in range(0,30):
+for x in range(0,100):
     temporals.append(i.clone())
 
 values = {} #Valores de variables simples
@@ -751,7 +772,7 @@ while cont < len(quadList):
     quad = quadList[cont]
     # print cont,
     # print quad
-    if quad[0] == '+' or quad[0] == '-' or quad[0] == '*' or quad[0] == '/' or quad[0] == '==' or quad[0] == '<' or quad[0] == '>' or quad[0] == '<>' or quad[0] == '<=' or quad[0] == '>=':
+    if quad[0] == '+' or quad[0] == '-' or quad[0] == '*' or quad[0] == '/' or quad[0] == '==' or quad[0] == '<' or quad[0] == '>' or quad[0] == '<>' or quad[0] == '<=' or quad[0] == '>=' or quad[0] == 'and' or quad[0] == 'or':
         if quad[1][0] == '%': #Int
             num1 = int(float(quad[1][1:]))
             type1 = 'int'
@@ -800,6 +821,10 @@ while cont < len(quadList):
             result = num1 >= num2
         elif quad[0] == '<>':
             result = num1 != num2
+        elif quad[0] == 'and':
+            result = num1 and num2
+        elif quad[0] == 'or':
+            result = num1 or num2
         if quad[3][0] == '~':
             temporals[int(float(quad[3][1:]))].value = result
             temporals[int(float(quad[3][1:]))].type = resultType(type1,type2,quad[0])
@@ -818,9 +843,17 @@ while cont < len(quadList):
         elif quad[1][0] == '~' and (variables[quad[3]] == 'real' or variables[quad[3]] == temporals[int(float(quad[1][1:]))].type):
             values[quad[3]] = temporals[int(float(quad[1][1:]))].value
             #variables[quad[3]] = temporals[int(float(quad[1][1:]))][type]
+        elif quad[1][0] == '(':
+            address = quad[1][1:-1]
+            if address[0] == '~':
+                address = address[1:]
+            address = temporals[int(float(address))].value
+            assign = dimentionVector[int(address)]
+            values[quad[3]] = assign
         elif quad[1] in values.keys():
             values[quad[3]] = values[quad[1]]
         else:
+            print quad[3]
             print ("type error cannot declare int as real, skipping step")
     elif quad[0] == '=':
         if quad[1][0] == '(':
@@ -838,7 +871,7 @@ while cont < len(quadList):
             elif quad[1][0] == '&':
                 assign = float(quad[1][1:])
             elif quad[1][0] == '~':
-                assign = temporals[int(float(quad[1][2:]))].value
+                assign = temporals[int(float(quad[1][1:]))].value
             else:
                 assign = values[quad[1]]
             address = quad[3][2:-1]
@@ -874,7 +907,7 @@ while cont < len(quadList):
         else:
             print values[quad[3]]
     elif quad[0] == 'end':
-        cont = len(quadList)
+        cont = len(quadList) - 1
     cont = cont + 1
 #print temporals
 print values

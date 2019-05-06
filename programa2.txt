@@ -9,7 +9,8 @@ a(0) = c(2,0)
 d(1) = 5.5
 a(1) = d(1)
 d(0) = 45
-c(0,3) = 700
+
+c(0,3) = c(2,0)
 call rutina
 end program menu
 

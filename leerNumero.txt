@@ -1,0 +1,25 @@
+program leerNumero
+int n
+do
+  write "dame un numero entre 0 y 7"
+  read n
+  if(n >= 0 and n <= 7) then exit end if
+end do
+  if (n == 0) then
+  write "cero"
+  elsif ( n == 1) then
+  write "uno"
+  elsif ( n == 2) then
+  write "dos"
+  elsif ( n == 3) then
+  write "tres"
+  elsif ( n == 4) then
+  write "cuatro"
+  elsif ( n == 5) then
+  write "cinco"
+  elsif ( n == 6) then
+  write "uno"
+  else
+  write "siete"
+  end if
+end program

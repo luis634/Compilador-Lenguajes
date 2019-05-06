@@ -1,0 +1,15 @@
+program sumatoria
+int x,r
+write "Calculo de sumatoria, da un valor:"
+read x
+call suma
+write r
+end program sumatoria
+
+subroutine suma
+r = r + x
+x = x - 1
+if (x > 0) then
+call suma
+end if
+end subroutine

@@ -1,0 +1,38 @@
+program ordena
+  int lista(10)
+  int aux(10)
+  int x,i,j,d,s1,s2,t1,t2
+  write "Cuantos elementos a ordenar"
+  read d
+  do i = 0, d - 1
+    read x
+    lista(i) = x
+  end do
+  call ordenar
+end program ordena
+
+subroutine ordenar
+  write "ordenando"
+  do i = 0, d - 2
+    do j= 0, d-i-2
+      write "comparando"
+      s1 = lista(j)
+      s2 = lista(j+1)
+      write s1
+      write s2
+      if(s1 > s2) then
+        s1 = j
+        s2 = j + 1
+        call swap
+      end if
+    end do
+  end do
+end subroutine
+
+subroutine swap
+  t1 = lista(s1)
+  t2 = lista(s2)
+  write "cambio"
+  lista(s1) = t2
+  lista(s2) = t1
+end subroutine

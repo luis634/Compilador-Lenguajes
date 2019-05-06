@@ -1,0 +1,101 @@
+program matrices
+int x1,y1,x2,y2,d,i,j,k,val
+real mat1(5,5)
+real mat2(5,5)
+real resultado(5,5)
+real temp1,temp2,temp3
+  write "(1)Multiplica Matrices (2)Suma Matrices"
+  read d
+  do
+    if (d == 1) then
+      call dimensiones
+      if (y1 <> x2) then
+        write "No concuerdan dimensiones para multiplicacion"
+        exit
+      end if
+      call multiplica
+      do i = 0,x1-1
+        do j=0,y2-1
+          temp1 = resultado(i,j)
+          write temp1
+        end do
+      end do
+    end if
+    exit
+  end do
+  if (d == 2) then
+    call dimensiones
+    if (x1<>x2 and y1 <> y2) then
+      write "No concuerdan dimensiones para sumar"
+      exit
+    end if
+    call suma
+    do i = 0,x1-1
+      do j=0,y1-1
+        temp1 = resultado(i,j)
+        write i
+        write j
+        
+        write temp1
+      end do
+    end do
+  end if
+end program matrices
+
+subroutine dimensiones
+  do
+    write "dimensiones de matriz 1"
+    read x1
+    read y1
+    if (x1 <= 5 and y1 <= 5 and x1 > 0 and y1 > 0) then exit end if
+    write "Dimension maxima 5X5"
+  end do
+  do i = 0, x1 - 1
+    do j = 0, y1 - 1
+      write "Valor"
+      write i
+      write j
+      read val
+      mat1(i,j) = val
+    end do
+  end do
+  do
+    write "dimensiones de matriz 2"
+    read x2
+    read y2
+    if (x2 <= 5 and y2 <= 5 and x2 > 0 and y2 > 0) then exit end if
+    write "Dimension maxima 5X5"
+  end do
+  do i = 0, x2 - 1
+    do j = 0, y2 - 1
+      write "Valor"
+      write i
+      write j
+      read val
+      mat2(i,j) = val
+    end do
+  end do
+end subroutine
+
+subroutine multiplica
+  do i=0,x1-1
+    do j=0,y2-1
+      do k=0,x2-1
+        temp1 = mat1(i,k)
+        temp2 = mat2(k,j)
+        temp3 = resultado(i,j)
+        resultado(i,j)=temp3+ temp1*temp2
+      end do
+    end do
+  end do
+end subroutine
+
+subroutine suma
+  do i = 0,x1-1
+    do j=0,y2-1
+      temp1 = mat1(i,j)
+      temp2 = mat2(i,j)
+      resultado(i,j) = temp1 + temp2
+    end do
+  end do
+end subroutine

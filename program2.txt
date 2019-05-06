@@ -6,8 +6,8 @@ program sumaMatrices
     int m2(50,50)
     int mR(50,50)
     #esto es un comentario
-    leeTamano()
-    sumaMat()
+    call leeTamano
+    call sumaMat
 end program sumaMatrices
 
 subroutine leeTamano
@@ -24,7 +24,7 @@ end subroutine
 subroutine sumaMat
     do r = 0, r1, 1
         do c = 0, c1, 1
-            #mR(r,c) = m1(r,c) + m2(r,c)
+            mR(r,c) = m1(r,c) + m2(r,c)
             write mR(r,c)
         end do
         write " /n "
